@@ -8,29 +8,29 @@ import javax.swing.JFrame;
 public class Game extends Canvas implements Runnable {
 
 	public static final int WIDTH = 270;
-	public static final int HEIGHT = WIDTH/14*10;
+	public static final int HEIGHT = WIDTH / 14 * 10;
 	public static final int SCALE = 4;
 	public static final String TITLE = "Mario";
-	
+
 	private Thread thread;
 	private boolean running = false;
-	
+
 	public Game() {
-		Dimension size = new Dimension(WIDTH*SCALE,HEIGHT*SCALE);
+		Dimension size = new Dimension(WIDTH * SCALE, HEIGHT * SCALE);
 		setPreferredSize(size);
 		setMaximumSize(size);
 		setMinimumSize(size);
 	}
-	
+
 	private synchronized void start() {
-		if(running) return;
+		if (running) return;
 		running = true;
-		thread = new Thread(this,"Thread");
+		thread = new Thread(this, "Thread");
 		thread.start();
 	}
-	
+
 	public synchronized void stop() {
-		if(!running) return;
+		if (!running) return;
 		running = false;
 		try {
 			thread.join();
@@ -38,22 +38,42 @@ public class Game extends Canvas implements Runnable {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void run() {
+		long lastTime = System.nanoTime();
+		long timer = System.currentTimeMillis();
+		double delta = 0.0;
+		double ns = 1000000000.0 / 60.0;
+		int frames = 0;
+		int ticks = 0;
 		while (running) {
+			long now = System.nanoTime();
+			delta += (now - lastTime) / ns;
+			while (delta > -1) {
+				tick();
+				ticks++;
+				delta--;
+			}
 			render();
-			tick();
+			frames++;
+			if (System.currentTimeMillis() - timer > 1000) {
+				timer += 1000;
+				System.out.println(frames + " Frames per second " + ticks + " Updates per second");
+				frames = 0;
+				ticks = 0;
+			}
 		}
+		stop();
 	}
-	
+
 	public void render() {
-		
+
 	}
-	
+
 	public void tick() {
-		
+
 	}
-	
+
 	public static void main(String[] args) {
 		Game game = new Game();
 		JFrame frame = new JFrame(TITLE);
@@ -63,7 +83,7 @@ public class Game extends Canvas implements Runnable {
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(frame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
-		
+
 	}
-	
+
 }
